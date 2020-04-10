@@ -1,13 +1,13 @@
 clear all;clc;close all;
 folder={'Oldenburg','SanJoaquin','SanFranciscoBayArea'};
-%ÔÚ´ËÉèÖÃËùÒªÊµÑéµÄÊı¾İ¼¯±àºÅ
+%åœ¨æ­¤è®¾ç½®æ‰€è¦å®éªŒçš„æ•°æ®é›†ç¼–å·
 mapId=3;
-% ÊµÑé´ÎÊı
+% å®éªŒæ¬¡æ•°
 tm=100;
-%eplisons²ÎÊıÉèÖÃ
+%eplisonså‚æ•°è®¾ç½®
 eplisons=[0.5,1,2,5];
 %%%%%%%%%%%%%%%%%%%%%%%%%%
-%% ¶ÁÈ¡Êı¾İ
+%% è¯»å–æ•°æ®
 edge=importdata([folder{mapId} '/edge.txt']);
 edge=[edge;fliplr(edge)];
 nodeTras=importdata([folder{mapId} '/node.txt']);
@@ -18,14 +18,14 @@ while ~feof(fidin)
     id=fscanf(fidin,'%f',[1,1]);
     m=fscanf(fidin,'%f',[1,1]);
     traj=fscanf(fidin,'%f',[m,1]);
-    trajs{id+1}=traj;
+    [trajs{id+1}]=traj;
     len=len+size(traj,1);
 end
 fclose(fidin);
-disp(['½ÚµãÊıÎª£º' num2str(size(nodeTras,1))]);
+disp(['èŠ‚ç‚¹æ•°ä¸ºï¼š' num2str(size(nodeTras,1))]);
 mp=sparse(edge(:,1),edge(:,2),1,size(nodeTras,1),size(nodeTras,1));
-disp(['±ßÊıÎª£º' num2str(sum(sum(sign(mp))))]);
-%% Í³¼Æ¹ì¼£Á÷Á¿Í¼
+disp(['è¾¹æ•°ä¸ºï¼š' num2str(sum(sum(sign(mp))))]);
+%% ç»Ÿè®¡è½¨è¿¹æµé‡å›¾
 tic
 n=size(nodeTras,1)+1;
 extraEdge=[(1:n-1)' ones(n-1,1)*n;ones(n-1,1)*n (1:n-1)'];
@@ -43,7 +43,7 @@ for i=1:size(trajs,2)
     dW=sparse(t1,t2,1);
     W=W+dW;
 end
-disp(['Á÷Á¿Í³¼ÆºÄÊ±£º' num2str(toc)]);
+disp(['æµé‡ç»Ÿè®¡è€—æ—¶ï¼š' num2str(toc)]);
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 errs1=[];
 errs2=[];
@@ -55,16 +55,16 @@ for k=1:size(eplisons,2)
     AW2=sparse(size(W,1),size(W,2));
     eplison=eplisons(k);
     for i=1:tm
-        %% Ìí¼ÓÀ­ÆÕÀ­Ë¹ÔëÉù
+        %% æ·»åŠ æ‹‰æ™®æ‹‰æ–¯å™ªå£°
         [a,b]=find(mp);
         rnds=GenLaplace(size(a,1),1,0,4/eplison);
         Rnd=sparse(a,b,rnds,size(mp,1),size(mp,2));
         W1=W+Rnd;
-        %% Ò»ÖÂĞÔµ÷½Ú
+        %% ä¸€è‡´æ€§è°ƒèŠ‚
         tic
         [r2,W2]=consistencyAdjustment(W1,mp);
         runTime(k,i)=toc;
-        %% ¼ÆËã±ê×¼Îó²î
+        %% è®¡ç®—æ ‡å‡†è¯¯å·®
         err1=norm(W1(1:n-1,1:n-1)-W(1:n-1,1:n-1),'fro');
         err2=norm(W2(1:n-1,1:n-1)-W(1:n-1,1:n-1),'fro');
         errs1(k,i)=err1;
@@ -75,21 +75,21 @@ for k=1:size(eplisons,2)
     AW1s{k}=AW1/tm;
     AW2s{k}=AW2/tm;
 end
-%% ¶Ô¶à´ÎÊµÑé½á¹ûÈ¡Æ½¾ù×÷Îª×îºóÊµÑé½á¹û
+%% å¯¹å¤šæ¬¡å®éªŒç»“æœå–å¹³å‡ä½œä¸ºæœ€åå®éªŒç»“æœ
 errs1=mean(errs1,2);
 errs2=mean(errs2,2);
 runTime=mean(runTime,2);
-%% ½á¹û
+%% ç»“æœ
 for k=1:size(eplisons,2)
     eplison=eplisons(k);
-    disp(['eplisonÎª' num2str(eplison) 'µÄµ÷½ÚÇ°ºóÁ÷Á¿Í¼Îª£º']);
-    disp('µ÷½ÚÇ°£º');
+    disp(['eplisonä¸º' num2str(eplison) 'çš„è°ƒèŠ‚å‰åæµé‡å›¾ä¸ºï¼š']);
+    disp('è°ƒèŠ‚å‰ï¼š');
     AW1s{k}
-    disp('µ÷½Úºó£º');
+    disp('è°ƒèŠ‚åï¼š');
     AW2s{k}
 end
-disp(['eplisonÖµ£º' sprintf('%g\t',eplisons)]);
-disp(['µ÷½ÚÇ°±ê×¼Îó²î£º' sprintf('%g\t',errs1)]);
-disp(['µ÷½Úºó±ê×¼Îó²î£º' sprintf('%g\t',errs2)]);
-disp(['Ò»ÖÂĞÔµ÷½ÚµÄÊµÑéºÄÊ±£º' sprintf('%g\t',runTime)]);
-disp(['µ÷½Úºó¼õĞ¡µÄÎó²î£º' sprintf('%g%%\t',100*(errs1-errs2)./errs1)]);
+disp(['eplisonå€¼ï¼š' sprintf('%g\t',eplisons)]);
+disp(['è°ƒèŠ‚å‰æ ‡å‡†è¯¯å·®ï¼š' sprintf('%g\t',errs1)]);
+disp(['è°ƒèŠ‚åæ ‡å‡†è¯¯å·®ï¼š' sprintf('%g\t',errs2)]);
+disp(['ä¸€è‡´æ€§è°ƒèŠ‚çš„å®éªŒè€—æ—¶ï¼š' sprintf('%g\t',runTime)]);
+disp(['è°ƒèŠ‚åå‡å°çš„è¯¯å·®ï¼š' sprintf('%g%%\t',100*(errs1-errs2)./errs1)]);
